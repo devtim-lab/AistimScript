@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.19.6
+// @version      2026-09-05.19.7
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       arimonox
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.19.6'
+        version: 'v2026-09-05.19.7'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -431,12 +431,16 @@
             font-size: 14px;
             cursor: pointer;
             background: #1a7ab8;
+            background-color: #1a7ab8;
             color: #fff;
             width: 100%;
             pointer-events: auto !important;
             opacity: 1 !important;
             min-height: 40px;
             outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         `;
 
         const options = [
@@ -508,7 +512,7 @@
         body.appendChild(btnRefresh);
 
         const credit = document.createElement('div');
-        credit.textContent = 'created by arimonox';
+        credit.textContent = 'created by aistim';
         credit.style.cssText = 'color: rgba(255,255,255,0.5); font-size: 10px; text-align: center; padding: 4px 0; font-style: italic;';
         body.appendChild(credit);
 

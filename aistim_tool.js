@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.19.1
+// @version      2026-09-05.19.2
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       You
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.19.1'
+        version: 'v2026-09-05.19.2'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -311,14 +311,13 @@
             if (container) {
                 panel.style.cssText = `
                     z-index: 999999 !important;
-                    background: #7a7a7a;
+                    background: #2c9cdb;
                     border: none;
                     border-radius: 0;
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                     font-size: 14px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                    width: 220px;
-                    max-width: 220px;
+                    box-shadow: none;
+                    width: 100%;
                     overflow: hidden;
                     margin: 0;
                     color: #fff;
@@ -337,14 +336,13 @@
                 top: 10px;
                 right: 10px;
                 z-index: 999999 !important;
-                background: #7a7a7a;
+                background: #2c9cdb;
                 border: none;
                 border-radius: 0;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 font-size: 14px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                box-shadow: none;
                 width: 220px;
-                max-width: 220px;
                 overflow: hidden;
                 color: #fff;
             `;
@@ -401,12 +399,12 @@
             display: flex;
             flex-direction: column;
             gap: 0;
-            background: #7a7a7a;
+            background: #2c9cdb;
         `;
 
         const filterLabel = document.createElement('div');
         filterLabel.textContent = 'Filter Tampilan:';
-        filterLabel.style.cssText = 'color: #fff; padding: 8px 12px 4px 12px; font-size: 12px;';
+        filterLabel.style.cssText = 'color: #fff; padding: 8px 12px 4px 12px; font-size: 13px; font-weight: 500;';
 
         const filterSelect = document.createElement('select');
         filterSelect.id = 'erzap-filter-select';
@@ -415,10 +413,10 @@
             padding: 8px 10px;
             border-radius: 0;
             border: none;
-            border-bottom: 1px solid #666;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
             font-size: 13px;
             cursor: pointer;
-            background: #888;
+            background: rgba(0,0,0,0.15);
             color: #fff;
             width: 100%;
             pointer-events: auto !important;
@@ -457,11 +455,11 @@
         }, { passive: true });
 
         const divider = document.createElement('div');
-        divider.style.cssText = 'border-top: 1px solid #666; margin: 0;';
+        divider.style.cssText = 'border-top: 1px solid rgba(255,255,255,0.2); margin: 0;';
 
         const refreshLabel = document.createElement('div');
         refreshLabel.textContent = 'Auto Refresh:';
-        refreshLabel.style.cssText = 'color: #fff; padding: 8px 12px 4px 12px; font-size: 12px;';
+        refreshLabel.style.cssText = 'color: #fff; padding: 8px 12px 4px 12px; font-size: 13px; font-weight: 500;';
 
         const countdown = document.createElement('div');
         countdown.id = 'erzap-refresh-countdown';
@@ -471,10 +469,11 @@
         const btnRefresh = document.createElement('button');
         btnRefresh.textContent = '🔄 Refresh Sekarang';
         btnRefresh.style.cssText = `
-            background: #1a7ab8;
+            background: rgba(0,0,0,0.15);
             color: #fff;
             border: none;
             border-radius: 0;
+            border-top: 1px solid rgba(255,255,255,0.2);
             padding: 10px 12px;
             font-size: 13px;
             cursor: pointer;
@@ -482,10 +481,10 @@
             width: 100%;
             text-align: left;
         `;
-        btnRefresh.onmouseenter = () => btnRefresh.style.background = '#1565a8';
-        btnRefresh.onmouseleave = () => btnRefresh.style.background = '#1a7ab8';
-        btnRefresh.ontouchstart = () => btnRefresh.style.background = '#1565a8';
-        btnRefresh.ontouchend = () => btnRefresh.style.background = '#1a7ab8';
+        btnRefresh.onmouseenter = () => btnRefresh.style.background = 'rgba(0,0,0,0.25)';
+        btnRefresh.onmouseleave = () => btnRefresh.style.background = 'rgba(0,0,0,0.15)';
+        btnRefresh.ontouchstart = () => btnRefresh.style.background = 'rgba(0,0,0,0.25)';
+        btnRefresh.ontouchend = () => btnRefresh.style.background = 'rgba(0,0,0,0.15)';
         btnRefresh.onclick = () => location.reload();
 
         body.appendChild(filterLabel);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.19.3
+// @version      2026-09-05.19.4
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       You
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.19.3'
+        version: 'v2026-09-05.19.4'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -207,7 +207,7 @@
             positif: '🟢 Positif (+)',
             nol: '⚪ Nol (0)',
             blank: '⬜ Blank',
-            koreksi: '🔵 Ada Selisih (-/+)' // <-- GANTI: Ada Koreksi → Ada Selisih
+            koreksi: '🟠 Ada Selisih (-/+)' // <-- GANTI: Ada Koreksi → Ada Selisih
         };
 
         Array.from(select.options).forEach(opt => {
@@ -349,6 +349,21 @@
             document.body.appendChild(panel);
         }
 
+        // Style untuk option dropdown agar tidak putih (text putih di bg putih = tidak terbaca)
+        if (!document.getElementById('erzap-panel-style')) {
+            const style = document.createElement('style');
+            style.id = 'erzap-panel-style';
+            style.textContent = `
+                select#erzap-filter-select option {
+                    background: #2c3e50 !important;
+                    color: #fff !important;
+                    font-size: 14px;
+                    padding: 8px;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         const header = document.createElement('div');
         header.style.cssText = `
             display: flex;
@@ -426,7 +441,7 @@
 
         const options = [
             { value: 'semua', text: '📋 Semua' },
-            { value: 'koreksi', text: '🔵 Ada Selisih (-/+)' }, // <-- GANTI
+            { value: 'koreksi', text: '🟠 Ada Selisih (-/+)' }, // <-- GANTI
             { value: 'negatif', text: '🔴 Negatif (-)' },
             { value: 'positif', text: '🟢 Positif (+)' },
             { value: 'nol', text: '⚪ Nol (0)' },

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.17
+// @version      2026-09-05.18
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       You
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.17'
+        version: 'v2026-09-05.18'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -290,20 +290,62 @@
 
         const panel = document.createElement('div');
         panel.id = 'erzap-panel';
-        panel.style.cssText = `
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 999999 !important;
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            font-size: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            min-width: 180px;
-            overflow: hidden;
-        `;
+
+        // Coba cari menu Administrator untuk menempatkan panel di bawahnya
+        let adminEl = null;
+        let isInline = false;
+        const allElements = document.querySelectorAll('*');
+        for (const el of allElements) {
+            if (el.textContent && el.textContent.trim() === 'Administrator') {
+                adminEl = el;
+                break;
+            }
+        }
+
+        // Jika ketemu Administrator, tempatkan panel di bawahnya (mobile sidebar / desktop topbar)
+        if (adminEl) {
+            isInline = true;
+            // Cari parent container yang cocok untuk menyisipkan panel
+            let container = adminEl.closest('li, .nav-item, .menu-item, [class*="menu"], [class*="nav"]');
+            if (!container) container = adminEl.parentElement;
+            if (container) {
+                panel.style.cssText = `
+                    z-index: 999999 !important;
+                    background: #fff;
+                    border: 1px solid #ccc;
+                    border-radius: 8px;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    font-size: 12px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    min-width: 180px;
+                    overflow: hidden;
+                    margin: 8px;
+                `;
+                // Sisipkan setelah container Administrator
+                container.parentNode.insertBefore(panel, container.nextSibling);
+            } else {
+                isInline = false;
+            }
+        }
+
+        // Fallback: fixed top-right kalau tidak ketemu Administrator
+        if (!isInline) {
+            panel.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 999999 !important;
+                background: #fff;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                font-size: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                min-width: 180px;
+                overflow: hidden;
+            `;
+            document.body.appendChild(panel);
+        }
 
         const header = document.createElement('div');
         header.style.cssText = `
@@ -446,7 +488,6 @@
 
         panel.appendChild(header);
         panel.appendChild(body);
-        document.body.appendChild(panel);
 
         function renderPanelState() {
             const collapsed = getPanelCollapsed();

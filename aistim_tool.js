@@ -294,7 +294,7 @@
             position: fixed;
             top: 10px;
             right: 10px;
-            z-index: 99999;
+            z-index: 999999 !important;
             background: #fff;
             border: 1px solid #ccc;
             border-radius: 8px;
@@ -362,14 +362,21 @@
 
         const filterSelect = document.createElement('select');
         filterSelect.id = 'erzap-filter-select';
+        filterSelect.disabled = false;
         filterSelect.style.cssText = `
             padding: 5px 8px;
             border-radius: 4px;
-            border: 1px solid #bbb;
+            border: 1px solid #007bff;
             font-size: 12px;
             cursor: pointer;
-            background: #f8f9fa;
+            background: #ffffff;
+            color: #222;
             width: 100%;
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            -webkit-appearance: menulist-button;
+            appearance: auto;
+            min-height: 32px;
         `;
 
         const options = [

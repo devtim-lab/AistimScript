@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.18
+// @version      2026-09-05.19.1
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       You
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.18'
+        version: 'v2026-09-05.19.1'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -311,15 +311,17 @@
             if (container) {
                 panel.style.cssText = `
                     z-index: 999999 !important;
-                    background: #fff;
-                    border: 1px solid #ccc;
-                    border-radius: 8px;
+                    background: #7a7a7a;
+                    border: none;
+                    border-radius: 0;
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                    font-size: 12px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                    min-width: 180px;
+                    font-size: 14px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    width: 220px;
+                    max-width: 220px;
                     overflow: hidden;
-                    margin: 8px;
+                    margin: 0;
+                    color: #fff;
                 `;
                 // Sisipkan setelah container Administrator
                 container.parentNode.insertBefore(panel, container.nextSibling);
@@ -335,14 +337,16 @@
                 top: 10px;
                 right: 10px;
                 z-index: 999999 !important;
-                background: #fff;
-                border: 1px solid #ccc;
-                border-radius: 8px;
+                background: #7a7a7a;
+                border: none;
+                border-radius: 0;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                font-size: 12px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                min-width: 180px;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                width: 220px;
+                max-width: 220px;
                 overflow: hidden;
+                color: #fff;
             `;
             document.body.appendChild(panel);
         }
@@ -353,11 +357,12 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            padding: 8px 10px;
-            background: #f1f3f5;
-            border-bottom: 1px solid #e2e2e2;
+            padding: 10px 12px;
+            background: #1a7ab8;
+            border-bottom: 1px solid #1565a8;
             cursor: pointer;
             user-select: none;
+            color: #fff;
         `;
 
         const titleWrap = document.createElement('div');
@@ -365,11 +370,11 @@
 
         const title = document.createElement('div');
         title.textContent = '⚙️ Aistim Tool';
-        title.style.cssText = 'font-weight: 700; color: #222; font-size: 13px;';
+        title.style.cssText = 'font-weight: 700; color: #fff; font-size: 14px;';
 
         const version = document.createElement('div');
         version.textContent = CONFIG.version;
-        version.style.cssText = 'color: #999; font-size: 10px; font-family: monospace;';
+        version.style.cssText = 'color: #ddd; font-size: 10px; font-family: monospace;';
 
         titleWrap.appendChild(title);
         titleWrap.appendChild(version);
@@ -381,7 +386,7 @@
             border: none;
             cursor: pointer;
             font-size: 12px;
-            color: #555;
+            color: #fff;
             padding: 0 2px;
             line-height: 1;
         `;
@@ -392,33 +397,35 @@
         const body = document.createElement('div');
         body.id = 'erzap-panel-body';
         body.style.cssText = `
-            padding: 10px 12px;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 0;
+            background: #7a7a7a;
         `;
 
         const filterLabel = document.createElement('div');
         filterLabel.textContent = 'Filter Tampilan:';
-        filterLabel.style.cssText = 'color: #555;';
+        filterLabel.style.cssText = 'color: #fff; padding: 8px 12px 4px 12px; font-size: 12px;';
 
         const filterSelect = document.createElement('select');
         filterSelect.id = 'erzap-filter-select';
         filterSelect.disabled = false;
         filterSelect.style.cssText = `
-            padding: 5px 8px;
-            border-radius: 4px;
-            border: 1px solid #007bff;
-            font-size: 12px;
+            padding: 8px 10px;
+            border-radius: 0;
+            border: none;
+            border-bottom: 1px solid #666;
+            font-size: 13px;
             cursor: pointer;
-            background: #ffffff;
-            color: #222;
+            background: #888;
+            color: #fff;
             width: 100%;
             pointer-events: auto !important;
             opacity: 1 !important;
             -webkit-appearance: menulist-button;
             appearance: auto;
-            min-height: 32px;
+            min-height: 36px;
         `;
 
         const options = [
@@ -440,43 +447,45 @@
         filterSelect.value = getSavedFilter();
 
         const onFilterChange = (e) => {
-            e.stopPropagation();
             saveFilter(e.target.value);
             applyFilter();
         };
         filterSelect.addEventListener('change', onFilterChange);
-        filterSelect.addEventListener('input', onFilterChange);
-        filterSelect.addEventListener('click', (e) => e.stopPropagation());
+        // Mobile: pakai touchend agar select terbuka di HP
+        filterSelect.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+        }, { passive: true });
 
         const divider = document.createElement('div');
-        divider.style.cssText = 'border-top: 1px solid #eee; margin: 2px 0;';
+        divider.style.cssText = 'border-top: 1px solid #666; margin: 0;';
 
         const refreshLabel = document.createElement('div');
         refreshLabel.textContent = 'Auto Refresh:';
-        refreshLabel.style.cssText = 'color: #555;';
+        refreshLabel.style.cssText = 'color: #fff; padding: 8px 12px 4px 12px; font-size: 12px;';
 
         const countdown = document.createElement('div');
         countdown.id = 'erzap-refresh-countdown';
         countdown.textContent = CONFIG.autoRefreshSeconds > 0 ? 'Menunggu...' : 'Mati';
-        countdown.style.cssText = 'color: #007bff; font-family: monospace; font-size: 13px;';
+        countdown.style.cssText = 'color: #fff; font-family: monospace; font-size: 13px; padding: 0 12px 8px 12px;';
 
         const btnRefresh = document.createElement('button');
         btnRefresh.textContent = '🔄 Refresh Sekarang';
         btnRefresh.style.cssText = `
-            background: #007bff;
+            background: #1a7ab8;
             color: #fff;
             border: none;
-            border-radius: 4px;
-            padding: 7px 10px;
-            font-size: 12px;
+            border-radius: 0;
+            padding: 10px 12px;
+            font-size: 13px;
             cursor: pointer;
             font-weight: 500;
             width: 100%;
+            text-align: left;
         `;
-        btnRefresh.onmouseenter = () => btnRefresh.style.background = '#0056b3';
-        btnRefresh.onmouseleave = () => btnRefresh.style.background = '#007bff';
-        btnRefresh.ontouchstart = () => btnRefresh.style.background = '#0056b3';
-        btnRefresh.ontouchend = () => btnRefresh.style.background = '#007bff';
+        btnRefresh.onmouseenter = () => btnRefresh.style.background = '#1565a8';
+        btnRefresh.onmouseleave = () => btnRefresh.style.background = '#1a7ab8';
+        btnRefresh.ontouchstart = () => btnRefresh.style.background = '#1565a8';
+        btnRefresh.ontouchend = () => btnRefresh.style.background = '#1a7ab8';
         btnRefresh.onclick = () => location.reload();
 
         body.appendChild(filterLabel);

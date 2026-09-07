@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.20.3
+// @version      2026-09-05.20.4
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       arimonox
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.20.3'
+        version: 'v2026-09-05.20.4'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -423,6 +423,7 @@
             opacity: 1 !important;
             min-height: 40px;
             outline: none;
+            text-align: left;
         `;
 
         const options = [

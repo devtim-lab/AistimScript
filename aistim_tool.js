@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.19.8
+// @version      2026-09-05.19.9
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       arimonox
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.19.8'
+        version: 'v2026-09-05.19.9'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -310,10 +310,9 @@
             if (!container) container = adminEl.parentElement;
             if (container) {
                 const parent = container.parentNode;
-                const parentStyle = window.getComputedStyle ? window.getComputedStyle(parent) : null;
-                const isHorizontal = parentStyle && (parentStyle.display === 'flex' || parentStyle.display === 'inline-flex');
+                const isDesktop = window.innerWidth > 768;
 
-                if (isHorizontal) {
+                if (isDesktop) {
                     // Desktop topbar: panel sejajar di kanan Administrator
                     panel.style.cssText = `
                         z-index: 999999 !important;

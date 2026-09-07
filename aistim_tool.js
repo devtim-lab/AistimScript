@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.19.7
+// @version      2026-09-05.19.8
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       arimonox
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.19.7'
+        version: 'v2026-09-05.19.8'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -309,21 +309,45 @@
             let container = adminEl.closest('li, .nav-item, .menu-item, [class*="menu"], [class*="nav"]');
             if (!container) container = adminEl.parentElement;
             if (container) {
-                panel.style.cssText = `
-                    z-index: 999999 !important;
-                    background: #2c9cdb;
-                    border: none;
-                    border-radius: 0;
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                    font-size: 14px;
-                    box-shadow: none;
-                    width: 100%;
-                    overflow: hidden;
-                    margin: 0;
-                    color: #fff;
-                `;
-                // Sisipkan setelah container Administrator
-                container.parentNode.insertBefore(panel, container.nextSibling);
+                const parent = container.parentNode;
+                const parentStyle = window.getComputedStyle ? window.getComputedStyle(parent) : null;
+                const isHorizontal = parentStyle && (parentStyle.display === 'flex' || parentStyle.display === 'inline-flex');
+
+                if (isHorizontal) {
+                    // Desktop topbar: panel sejajar di kanan Administrator
+                    panel.style.cssText = `
+                        z-index: 999999 !important;
+                        background: #2c9cdb;
+                        border: none;
+                        border-radius: 0;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        font-size: 14px;
+                        box-shadow: none;
+                        width: 220px;
+                        overflow: hidden;
+                        margin: 0;
+                        color: #fff;
+                        display: inline-block;
+                        vertical-align: top;
+                    `;
+                    parent.insertBefore(panel, container.nextSibling);
+                } else {
+                    // Mobile sidebar: panel full width di bawah Administrator
+                    panel.style.cssText = `
+                        z-index: 999999 !important;
+                        background: #2c9cdb;
+                        border: none;
+                        border-radius: 0;
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        font-size: 14px;
+                        box-shadow: none;
+                        width: 100%;
+                        overflow: hidden;
+                        margin: 0;
+                        color: #fff;
+                    `;
+                    parent.insertBefore(panel, container.nextSibling);
+                }
             } else {
                 isInline = false;
             }

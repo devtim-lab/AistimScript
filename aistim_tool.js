@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.19.9
+// @version      2026-09-05.19.10
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       arimonox
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.19.9'
+        version: 'v2026-09-05.19.10'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -545,7 +545,6 @@
         function renderPanelState() {
             const collapsed = getPanelCollapsed();
             body.style.display = collapsed ? 'none' : 'flex';
-            header.style.borderBottom = collapsed ? 'none' : '1px solid #e2e2e2';
             btnToggle.textContent = collapsed ? '▼ Show' : '▲ Hide';
             btnToggle.title = collapsed ? 'Tampilkan panel' : 'Sembunyikan panel';
         }

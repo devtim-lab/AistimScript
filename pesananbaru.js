@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Erzap - Rekap Pesanan Baru per Outlet (Tema Merah Shadow)
 // @namespace    http://tampermonkey.net/
-// @version      1.1.1
+// @version      1.1.2
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js
 // @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js
 // @description  Otomatis set status Pesanan Baru, rekap otomatis antar halaman, urutkan dari yang tertinggi (Tema Merah Shadow 3D).
@@ -13,26 +13,6 @@
 
 (function() {
     'use strict';
-
-    // ==========================================
-    // CHANGELOG / VERSION HISTORY
-    // ==========================================
-    // v1.1.1 (2026-09-07) - Update
-    //   - Perbaikan dan peningkatan fitur
-    // v1.1.0 (2026-09-07) - Tema Merah Shadow
-    //   - Ganti tema merah solid jadi merah shadow/3D
-    //   - Tombol rekap dengan efek bayangan
-    //   - Header modal dengan glow effect
-    //   - Angka jumlah dengan text-shadow
-    // v1.0.0 (2026-09-07) - Initial Release
-    //   - Auto search saat outlet berubah
-    //   - Tombol rekap pesanan
-    //   - Rekap otomatis antar halaman
-    //   - Filter status "Pesanan Baru"
-    //   - Pagination support
-    //   - Sorting dari tertinggi ke terendah
-    //   - Modal UI dengan tema merah
-    // ==========================================
 
     // Konstanta warna & shadow
     const MERAH = '#dc3545';

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.20.1
+// @version      2026-09-05.20.2
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       arimonox
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.20.1'
+        version: 'v2026-09-05.20.2'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -202,12 +202,12 @@
         });
 
         const baseLabels = {
-            semua: '📋 Semua',
-            negatif: '🔴 Negatif (-)',
-            positif: '🟢 Positif (+)',
-            nol: '⚪ Nol (0)',
-            blank: '⬜ Blank',
-            koreksi: '🟠 Ada Selisih (-/+)' // <-- GANTI: Ada Koreksi → Ada Selisih
+            semua: 'Semua',
+            negatif: 'Negatif (-)',
+            positif: 'Positif (+)',
+            nol: 'Nol (0)',
+            blank: 'Blank',
+            koreksi: 'Ada Selisih (-/+)' // <-- GANTI: Ada Koreksi → Ada Selisih
         };
 
         Array.from(select.options).forEach(opt => {
@@ -426,12 +426,12 @@
         `;
 
         const options = [
-            { value: 'semua', text: '📋 Semua' },
-            { value: 'koreksi', text: '🟠 Ada Selisih (-/+)' },
-            { value: 'negatif', text: '🔴 Negatif (-)' },
-            { value: 'positif', text: '🟢 Positif (+)' },
-            { value: 'nol', text: '⚪ Nol (0)' },
-            { value: 'blank', text: '⬜ Blank' }
+            { value: 'semua', text: 'Semua' },
+            { value: 'koreksi', text: 'Ada Selisih (-/+)' },
+            { value: 'negatif', text: 'Negatif (-)' },
+            { value: 'positif', text: 'Positif (+)' },
+            { value: 'nol', text: 'Nol (0)' },
+            { value: 'blank', text: 'Blank' }
         ];
 
         options.forEach(opt => {

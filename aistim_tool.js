@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.19.10
+// @version      2026-09-05.20
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       arimonox
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.19.10'
+        version: 'v2026-09-05.20'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -288,12 +288,8 @@
     function createPanel() {
         if (document.getElementById('erzap-panel')) return;
 
-        const panel = document.createElement('div');
-        panel.id = 'erzap-panel';
-
-        // Coba cari menu Administrator untuk menempatkan panel di bawahnya
+        // Cari menu Administrator
         let adminEl = null;
-        let isInline = false;
         const allElements = document.querySelectorAll('*');
         for (const el of allElements) {
             if (el.textContent && el.textContent.trim() === 'Administrator') {
@@ -302,77 +298,85 @@
             }
         }
 
-        // Jika ketemu Administrator, tempatkan panel di bawahnya (mobile sidebar / desktop topbar)
-        if (adminEl) {
-            isInline = true;
-            // Cari parent container yang cocok untuk menyisipkan panel
-            let container = adminEl.closest('li, .nav-item, .menu-item, [class*="menu"], [class*="nav"]');
-            if (!container) container = adminEl.parentElement;
-            if (container) {
-                const parent = container.parentNode;
-                const isDesktop = window.innerWidth > 768;
+        // Buat wrapper menu item + dropdown (seperti menu Administrator)
+        const wrapper = document.createElement('div');
+        wrapper.id = 'erzap-wrapper';
+        wrapper.style.cssText = 'position: relative; display: inline-block; cursor: pointer;';
 
-                if (isDesktop) {
-                    // Desktop topbar: panel sejajar di kanan Administrator
-                    panel.style.cssText = `
-                        z-index: 999999 !important;
-                        background: #2c9cdb;
-                        border: none;
-                        border-radius: 0;
-                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                        font-size: 14px;
-                        box-shadow: none;
-                        width: 220px;
-                        overflow: hidden;
-                        margin: 0;
-                        color: #fff;
-                        display: inline-block;
-                        vertical-align: top;
-                    `;
-                    parent.insertBefore(panel, container.nextSibling);
-                } else {
-                    // Mobile sidebar: panel full width di bawah Administrator
-                    panel.style.cssText = `
-                        z-index: 999999 !important;
-                        background: #2c9cdb;
-                        border: none;
-                        border-radius: 0;
-                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                        font-size: 14px;
-                        box-shadow: none;
-                        width: 100%;
-                        overflow: hidden;
-                        margin: 0;
-                        color: #fff;
-                    `;
-                    parent.insertBefore(panel, container.nextSibling);
-                }
-            } else {
-                isInline = false;
+        // Tombol menu yang terlihat di navbar
+        const menuBtn = document.createElement('div');
+        menuBtn.id = 'erzap-menu-btn';
+        menuBtn.style.cssText = `
+            padding: 8px 15px;
+            background: #2c9cdb;
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            user-select: none;
+        `;
+        menuBtn.innerHTML = '⚙️ Aistim Tool <span id="erzap-menu-arrow" style="font-size:10px;">▼</span>';
+
+        // Panel dropdown (default hidden, muncul saat menuBtn diklik)
+        const panel = document.createElement('div');
+        panel.id = 'erzap-panel';
+        panel.style.cssText = `
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 999999 !important;
+            background: #2c9cdb;
+            border: none;
+            border-radius: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            width: 220px;
+            overflow: hidden;
+            color: #fff;
+        `;
+
+        // Toggle dropdown saat menuBtn diklik
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isVisible = panel.style.display === 'block';
+            panel.style.display = isVisible ? 'none' : 'block';
+            document.getElementById('erzap-menu-arrow').textContent = isVisible ? '▼' : '▲';
+        });
+
+        // Tutup dropdown saat klik di luar
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) {
+                panel.style.display = 'none';
+                document.getElementById('erzap-menu-arrow').textContent = '▼';
             }
+        });
+
+        wrapper.appendChild(menuBtn);
+        wrapper.appendChild(panel);
+
+        // Sisipkan menu item ke navbar (sebelum/sesudah Administrator)
+        if (adminEl) {
+            const adminContainer = adminEl.closest('li, .nav-item, .menu-item, [class*="menu"], [class*="nav"]');
+            if (adminContainer && adminContainer.parentNode) {
+                adminContainer.parentNode.insertBefore(wrapper, adminContainer.nextSibling);
+            } else {
+                document.body.appendChild(wrapper);
+                wrapper.style.position = 'fixed';
+                wrapper.style.top = '10px';
+                wrapper.style.right = '10px';
+            }
+        } else {
+            document.body.appendChild(wrapper);
+            wrapper.style.position = 'fixed';
+            wrapper.style.top = '10px';
+            wrapper.style.right = '10px';
         }
 
-        // Fallback: fixed top-right kalau tidak ketemu Administrator
-        if (!isInline) {
-            panel.style.cssText = `
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                z-index: 999999 !important;
-                background: #2c9cdb;
-                border: none;
-                border-radius: 0;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                font-size: 14px;
-                box-shadow: none;
-                width: 220px;
-                overflow: hidden;
-                color: #fff;
-            `;
-            document.body.appendChild(panel);
-        }
-
-        // Style untuk option dropdown agar tidak putih (text putih di bg putih = tidak terbaca)
+        // Style untuk option dropdown agar tidak putih
         if (!document.getElementById('erzap-panel-style')) {
             const style = document.createElement('style');
             style.id = 'erzap-panel-style';
@@ -387,49 +391,7 @@
             document.head.appendChild(style);
         }
 
-        const header = document.createElement('div');
-        header.style.cssText = `
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 10px 12px;
-            background: #1a7ab8;
-            border-bottom: 1px solid #1565a8;
-            cursor: pointer;
-            user-select: none;
-            color: #fff;
-        `;
-
-        const titleWrap = document.createElement('div');
-        titleWrap.style.cssText = 'display: flex; align-items: baseline; gap: 6px;';
-
-        const title = document.createElement('div');
-        title.textContent = '⚙️ Aistim Tool';
-        title.style.cssText = 'font-weight: 700; color: #fff; font-size: 14px;';
-
-        const version = document.createElement('div');
-        version.textContent = CONFIG.version;
-        version.style.cssText = 'color: #ddd; font-size: 10px; font-family: monospace;';
-
-        titleWrap.appendChild(title);
-        titleWrap.appendChild(version);
-
-        const btnToggle = document.createElement('button');
-        btnToggle.id = 'erzap-panel-toggle';
-        btnToggle.style.cssText = `
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
-            color: #fff;
-            padding: 0 2px;
-            line-height: 1;
-        `;
-
-        header.appendChild(titleWrap);
-        header.appendChild(btnToggle);
-
+        // ==== PANEL CONTENT ====
         const body = document.createElement('div');
         body.id = 'erzap-panel-body';
         body.style.cssText = `
@@ -468,7 +430,7 @@
 
         const options = [
             { value: 'semua', text: '📋 Semua' },
-            { value: 'koreksi', text: '🟠 Ada Selisih (-/+)' }, // <-- GANTI
+            { value: 'koreksi', text: '🟠 Ada Selisih (-/+)' },
             { value: 'negatif', text: '🔴 Negatif (-)' },
             { value: 'positif', text: '🟢 Positif (+)' },
             { value: 'nol', text: '⚪ Nol (0)' },
@@ -489,7 +451,6 @@
             applyFilter();
         };
         filterSelect.addEventListener('change', onFilterChange);
-        // Mobile: pakai touchend agar select terbuka di HP
         filterSelect.addEventListener('touchend', (e) => {
             e.stopPropagation();
         }, { passive: true });
@@ -539,22 +500,8 @@
         credit.style.cssText = 'color: rgba(255,255,255,0.5); font-size: 10px; text-align: center; padding: 4px 0; font-style: italic;';
         body.appendChild(credit);
 
-        panel.appendChild(header);
         panel.appendChild(body);
 
-        function renderPanelState() {
-            const collapsed = getPanelCollapsed();
-            body.style.display = collapsed ? 'none' : 'flex';
-            btnToggle.textContent = collapsed ? '▼ Show' : '▲ Hide';
-            btnToggle.title = collapsed ? 'Tampilkan panel' : 'Sembunyikan panel';
-        }
-
-        header.addEventListener('click', () => {
-            savePanelCollapsed(!getPanelCollapsed());
-            renderPanelState();
-        });
-
-        renderPanelState();
         updateFilterCounts();
         log('Panel created');
     }

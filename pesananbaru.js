@@ -1,7 +1,9 @@
 // ==UserScript==
 // @name         Erzap - Rekap Pesanan Baru per Outlet (Tema Merah)
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-07
+// @version      1.0.0
+// @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js
+// @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js
 // @description  Otomatis set status Pesanan Baru, rekap otomatis antar halaman, urutkan dari yang tertinggi (Tema Merah).
 // @author       You
 // @match        https://trial.erzap.com/pesanan_penjualans*
@@ -11,6 +13,19 @@
 
 (function() {
     'use strict';
+
+    // ==========================================
+    // CHANGELOG / VERSION HISTORY
+    // ==========================================
+    // v1.0.0 (2026-09-07) - Initial Release
+    //   - Auto search saat outlet berubah
+    //   - Tombol rekap pesanan (tema merah)
+    //   - Rekap otomatis antar halaman
+    //   - Filter status "Pesanan Baru"
+    //   - Pagination support
+    //   - Sorting dari tertinggi ke terendah
+    //   - Modal UI dengan tema merah #dc3545
+    // ==========================================
 
     // 1. Fitur Auto Search saat Outlet Berubah (Manual di layar)
     const interval = setInterval(() => {

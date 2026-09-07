@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AISTIM TOOL
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-05.20.2
+// @version      2026-09-05.20.3
 // @description  Header Cek Selisih + filter Ada Selisih + hasil jadi text (tidak bisa diubah)
 // @author       arimonox
 // @match        https://trial.erzap.com/stok_opnams/*
@@ -14,7 +14,7 @@
 
     const CONFIG = {
         autoRefreshSeconds: 60,
-        version: 'v2026-09-05.20.2'
+        version: 'v2026-09-05.20.3'
     };
 
     const STORAGE_KEY = 'erzap_filter';
@@ -205,8 +205,8 @@
             semua: 'Semua',
             negatif: 'Negatif (-)',
             positif: 'Positif (+)',
-            nol: 'Nol (0)',
-            blank: 'Blank',
+            nol: 'Real',
+            blank: 'Belum dicek',
             koreksi: 'Ada Selisih (-/+)' // <-- GANTI: Ada Koreksi → Ada Selisih
         };
 
@@ -308,7 +308,7 @@
         menuBtn.id = 'erzap-menu-btn';
         menuBtn.style.cssText = `
             padding: 8px 15px;
-            background: #2c9cdb;
+            background: #dc3545;
             color: #fff;
             font-size: 14px;
             display: flex;
@@ -328,12 +328,12 @@
             top: 100%;
             left: 0;
             z-index: 999999 !important;
-            background: #2c9cdb;
+            background: #dc3545;
             border: none;
             border-radius: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             font-size: 14px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(255,165,0,0.4);
             width: 220px;
             overflow: hidden;
             color: #fff;
@@ -382,7 +382,7 @@
             style.id = 'erzap-panel-style';
             style.textContent = `
                 select#erzap-filter-select option {
-                    background: #1a7ab8 !important;
+                    background: #c82333 !important;
                     color: #fff !important;
                     font-size: 14px;
                     padding: 8px;
@@ -399,7 +399,7 @@
             display: flex;
             flex-direction: column;
             gap: 0;
-            background: #2c9cdb;
+            background: #dc3545;
         `;
 
         const filterLabel = document.createElement('div');
@@ -415,8 +415,8 @@
             border: 1px solid rgba(255,255,255,0.3);
             font-size: 14px;
             cursor: pointer;
-            background: #1a7ab8;
-            background-color: #1a7ab8;
+            background: #c82333;
+            background-color: #c82333;
             color: #fff;
             width: 100%;
             pointer-events: auto !important;
@@ -430,8 +430,8 @@
             { value: 'koreksi', text: 'Ada Selisih (-/+)' },
             { value: 'negatif', text: 'Negatif (-)' },
             { value: 'positif', text: 'Positif (+)' },
-            { value: 'nol', text: 'Nol (0)' },
-            { value: 'blank', text: 'Blank' }
+            { value: 'nol', text: 'Real' },
+            { value: 'blank', text: 'Belum dicek' }
         ];
 
         options.forEach(opt => {

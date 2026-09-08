@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Rekap Stok Minus - Lihat Stok
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.1.0
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/rekapstokmin.js
 // @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/rekapstokmin.js
-// @description  [v1.0.0] Tombol rekap stok minus, sticky header, centang pindah ke bawah, HD zoom, dan tombol tutup
+// @description  [v1.1.0] Tombol rekap stok minus, sticky header, centang outlet checkbox, dan tombol tutup
 // @author       You
 // @match        https://trial.erzap.com/produk_gudangs/lihat_stok/new*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
@@ -24,7 +24,7 @@
         }
     }
 
-    // CSS Styling Modal, HD Zoom Viewer, Checkbox, Shadow Merah Theme & Compact Button
+    // CSS Styling Modal, Checkbox Outlet Area, Shadow Merah Theme & Compact Button
     const style = document.createElement('style');
     style.innerHTML = `
         .tm-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.65); z-index: 9999; display: none; justify-content: center; align-items: center; }
@@ -36,16 +36,25 @@
         .tm-close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1; transition: 0.2s; }
         .tm-close-btn:hover { color: #ffcdd2; }
 
-        .tm-filter-area { margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px; display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; border: 1px solid rgba(255,255,255,0.2); }
+        .tm-filter-area { margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px; display: flex; flex-direction: column; gap: 10px; border: 1px solid rgba(255,255,255,0.2); }
+        .tm-filter-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
         .tm-filter-group { display: flex; flex-direction: column; flex-grow: 1; }
         .tm-filter-group label { margin-bottom: 3px; font-size: 12px; font-weight: normal; color: #fff; }
-        .tm-filter-group input, .tm-filter-group select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; color: #333; font-size: 13px; background: #fff; }
+        .tm-filter-group input[type="text"] { padding: 6px; border-radius: 4px; border: 1px solid #ccc; color: #333; font-size: 13px; background: #fff; }
 
-        .tm-btn-cari { padding: 6px 15px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; height: 32px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        /* Container Checkbox Outlet bergaya mirip dropdown pencarian Erzap */
+        .tm-outlet-checkbox-container { background: #fff; border: 1px solid #ccc; border-radius: 4px; max-height: 120px; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+        .tm-outlet-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #333; cursor: pointer; }
+        .tm-outlet-item input { cursor: pointer; width: 14px; height: 14px; }
+        .tm-outlet-actions { display: flex; gap: 10px; margin-top: 2px; }
+        .tm-outlet-actions a { font-size: 11px; color: #ffcdd2; cursor: pointer; text-decoration: underline; }
+        .tm-outlet-actions a:hover { color: #fff; }
+
+        .tm-btn-cari { padding: 6px 15px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; height: 32px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); align-self: flex-end; }
         .tm-btn-cari:hover { background: #b71c1c; }
         .tm-btn-cari:disabled { background: #6c757d; cursor: not-allowed; }
 
-        .tm-modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; max-height: calc(90vh - 160px); }
+        .tm-modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; max-height: calc(90vh - 200px); }
 
         /* Sticky Table Header agar th tidak ikut ter-scroll */
         .tm-modal-body table { border-collapse: separate; border-spacing: 0; width: 100%; margin-bottom: 0; }
@@ -58,30 +67,6 @@
         #tmPaginationContainer a.pagination_link:hover, #tmPaginationContainer .paginate_button:hover { background: #b71c1c; color: white; }
         #tmPaginationContainer .disabled { color: #6c757d; cursor: not-allowed; padding: 5px 12px; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; }
         .tm-note { font-size: 11px; color: #888; margin-top: 5px; text-align: right; font-style: italic; }
-
-        /* HD Zoomable File Viewer Styles */
-        .tm-file-viewer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.92); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .tm-file-viewer-toolbar { position: absolute; top: 15px; right: 25px; display: flex; gap: 10px; align-items: center; z-index: 10001; }
-        .tm-file-info-badge { background: rgba(183, 28, 28, 0.9); color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-check-badge { background: rgba(40, 167, 69, 0.9); color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); user-select: none; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-check-badge input { width: 16px; height: 16px; cursor: pointer; }
-        .tm-zoom-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-zoom-btn:hover { background: rgba(255,255,255,0.4); }
-
-        .tm-view-close-btn { background: #495057; border: 1px solid white; color: white; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-view-close-btn:hover { background: #343a40; }
-
-        .tm-file-container { width: 90%; height: 85vh; display: flex; align-items: center; justify-content: center; overflow: auto; position: relative; border-radius: 4px; }
-        .tm-file-container img {
-            max-width: 100%;
-            transition: transform 0.15s ease-out;
-            cursor: grab;
-            user-select: none;
-            image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
-        }
-        .tm-file-container img:active { cursor: grabbing; }
-        .tm-file-container iframe { width: 100%; height: 100%; background: #fff; border: none; border-radius: 4px; }
 
         .tm-checkbox-cek { width: 18px; height: 18px; cursor: pointer; }
         tr.checked-row { background-color: #ffebee !important; color: #555; }
@@ -97,15 +82,21 @@
                         <button class="tm-close-btn" id="closeModalRekap">&times;</button>
                     </div>
                     <div class="tm-filter-area">
-                        <div class="tm-filter-group">
-                            <label>Cari Barcode / Nama / Kode Ref</label>
-                            <input type="text" id="tmInputKeyword" placeholder="Cari produk...">
+                        <div class="tm-filter-row">
+                            <div class="tm-filter-group" style="flex-grow: 1;">
+                                <label>Cari Barcode / Nama / Kode Ref</label>
+                                <input type="text" id="tmInputKeyword" placeholder="Cari produk...">
+                            </div>
                         </div>
-                        <div class="tm-filter-group">
-                            <label>Outlet</label>
-                            <select id="tmSelectOutlet"></select>
-                        </div>
-                        <div class="tm-filter-group" style="flex-grow: 0;">
+                        <div class="tm-filter-row" style="align-items: flex-start;">
+                            <div class="tm-filter-group">
+                                <label>Pilih Outlet (Checkbox)</label>
+                                <div class="tm-outlet-checkbox-container" id="tmOutletCheckboxContainer"></div>
+                                <div class="tm-outlet-actions">
+                                    <a id="tmSelectAllOutlet">Pilih Semua</a>
+                                    <a id="tmDeselectAllOutlet">Hapus Semua</a>
+                                </div>
+                            </div>
                             <button class="tm-btn-cari" id="tmBtnCari">Terapkan Filter</button>
                         </div>
                     </div>
@@ -127,21 +118,6 @@
                     <div id="tmPaginationContainer"></div>
                 </div>
             </div>
-        </div>
-
-        <div class="tm-file-viewer" id="modalFileViewer">
-            <div class="tm-file-viewer-toolbar" id="viewerToolbar">
-                <div class="tm-file-info-badge" id="fileInfoBadge">Barcode: - | Stok: -</div>
-                <div class="tm-check-badge" id="viewerCheckContainer">
-                    <input type="checkbox" id="viewerCheckbox" style="cursor: pointer;"> Sudah Dicek
-                </div>
-                <button class="tm-zoom-btn" id="btnZoomIn" title="Perbesar">+</button>
-                <button class="tm-zoom-btn" id="btnZoomOut" title="Perkecil">-</button>
-                <button class="tm-zoom-btn" id="btnZoomReset" title="Reset Ukuran">Reset</button>
-                <button class="tm-view-close-btn" id="btnViewClose">Tutup</button>
-                <button class="tm-close-btn" id="closeFileViewer" style="font-size: 28px; margin-left: 5px;">&times;</button>
-            </div>
-            <div class="tm-file-container" id="fileContainer"></div>
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', modalHTML);
@@ -175,7 +151,6 @@
                 const rows = tbody.querySelectorAll('tr');
                 rows.forEach((row, index) => {
                     const cols = row.querySelectorAll('td');
-                    // Sesuaikan struktur kolom halaman lihat stok (biasanya No, Barcode, Nama, Qty/Stok, dsb)
                     if (cols.length >= 4 && !row.classList.contains('dataTables_empty')) {
                         const barcodeText = cols[1] ? cols[1].innerText.trim() : `row_${index}`;
                         const storageKey = `erzap_stok_checked_${window.location.pathname}_${barcodeText}`;
@@ -184,8 +159,6 @@
                         const barcodeHtml = cols[1] ? cols[1].innerHTML.trim() : '';
                         const namaHtml = cols[2] ? cols[2].innerHTML.trim() : '';
 
-                        // Asumsi kolom jumlah/stok berada di indeks tertentu (misal indeks ke-3 atau kolom terakhir berisi angka minus)
-                        // Kita periksa seluruh kolom atau kolom qty standar tabel stok Erzap
                         let qtyVal = 0;
                         let qtyColIndex = -1;
                         for(let i = 3; i < cols.length; i++) {
@@ -197,7 +170,6 @@
                             }
                         }
 
-                        // Jika ditemukan stok < 0
                         if (qtyColIndex !== -1 && qtyVal < 0) {
                             dataDitemukan = true;
                             const textQty = cols[qtyColIndex].innerText.trim();
@@ -214,7 +186,6 @@
                 });
             }
 
-            // Urutkan: yang belum dicek di atas, yang sudah dicek pindah ke bawah
             rowsArray.sort((a, b) => (a.isChecked === b.isChecked) ? 0 : a.isChecked ? 1 : -1);
 
             rowsArray.forEach(item => {
@@ -279,20 +250,30 @@
             if(e) e.preventDefault();
 
             const oriOutlet = document.getElementById('pencarian_idoutlet_own');
-            const tmSelectOutlet = document.getElementById('tmSelectOutlet');
-            tmSelectOutlet.innerHTML = '';
+            const tmContainer = document.getElementById('tmOutletCheckboxContainer');
+            tmContainer.innerHTML = '';
+
             if (oriOutlet) {
                 Array.from(oriOutlet.options).forEach(opt => {
-                    const newOpt = document.createElement('option');
-                    newOpt.value = opt.value;
-                    newOpt.text = opt.text;
-                    tmSelectOutlet.appendChild(newOpt);
+                    if (!opt.value) return; // Lewati opsi kosong jika ada
+                    const isSelected = opt.selected;
+                    const itemDiv = document.createElement('label');
+                    itemDiv.className = 'tm-outlet-item';
+                    itemDiv.innerHTML = `<input type="checkbox" value="${opt.value}" ${isSelected ? 'checked' : ''}> ${opt.text}`;
+                    tmContainer.appendChild(itemDiv);
                 });
-                tmSelectOutlet.value = oriOutlet.value;
             }
 
             updateDataTabelModal();
             document.getElementById('modalRekapStok').style.display = 'flex';
+        });
+
+        document.getElementById('tmSelectAllOutlet').addEventListener('click', () => {
+            document.querySelectorAll('#tmOutletCheckboxContainer input[type="checkbox"]').forEach(cb => cb.checked = true);
+        });
+
+        document.getElementById('tmDeselectAllOutlet').addEventListener('click', () => {
+            document.querySelectorAll('#tmOutletCheckboxContainer input[type="checkbox"]').forEach(cb => cb.checked = false);
         });
 
         document.getElementById('tmBtnCari').addEventListener('click', function() {
@@ -305,9 +286,14 @@
             const keywordInput = document.getElementById('pencarian_barcode_nama_produk');
 
             if (oriOutlet) {
-                oriOutlet.value = document.getElementById('tmSelectOutlet').value;
+                const checkedValues = Array.from(document.querySelectorAll('#tmOutletCheckboxContainer input[type="checkbox"]:checked')).map(cb => cb.value);
+                Array.from(oriOutlet.options).forEach(opt => {
+                    opt.selected = checkedValues.includes(opt.value);
+                });
                 oriOutlet.dispatchEvent(new Event('change', { bubbles: true }));
+                if (typeof window.$ !== 'undefined') window.$(oriOutlet).trigger('change');
             }
+
             if (keywordInput) {
                 keywordInput.value = document.getElementById('tmInputKeyword').value;
             }
@@ -320,75 +306,6 @@
         document.getElementById('closeModalRekap').addEventListener('click', () => {
             document.getElementById('modalRekapStok').style.display = 'none';
         });
-
-        let currentZoom = 1;
-        let activeRowForViewer = null;
-
-        function closeViewer() {
-            document.getElementById('modalFileViewer').style.display = 'none';
-            document.getElementById('fileContainer').innerHTML = '';
-            currentZoom = 1;
-            activeRowForViewer = null;
-        }
-
-        document.getElementById('closeFileViewer').addEventListener('click', closeViewer);
-        document.getElementById('btnViewClose').addEventListener('click', closeViewer);
-
-        document.getElementById('viewerToolbar').addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-
-        const viewerCheckContainer = document.getElementById('viewerCheckContainer');
-        viewerCheckContainer.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const checkbox = document.getElementById('viewerCheckbox');
-            if (e.target !== checkbox) {
-                checkbox.checked = !checkbox.checked;
-            }
-            if (activeRowForViewer) {
-                const mainCheckbox = activeRowForViewer.querySelector('.tm-checkbox-cek');
-                if (mainCheckbox) {
-                    mainCheckbox.checked = checkbox.checked;
-                    mainCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            }
-        });
-
-        document.getElementById('viewerCheckbox').addEventListener('change', function(e) {
-            e.stopPropagation();
-            if (activeRowForViewer) {
-                const mainCheckbox = activeRowForViewer.querySelector('.tm-checkbox-cek');
-                if (mainCheckbox) {
-                    mainCheckbox.checked = this.checked;
-                    mainCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            }
-        });
-
-        document.getElementById('btnZoomIn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            currentZoom += 0.25;
-            applyZoom();
-        });
-
-        document.getElementById('btnZoomOut').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (currentZoom > 0.5) currentZoom -= 0.25;
-            applyZoom();
-        });
-
-        document.getElementById('btnZoomReset').addEventListener('click', (e) => {
-            e.stopPropagation();
-            currentZoom = 1;
-            applyZoom();
-        });
-
-        function applyZoom() {
-            const img = document.querySelector('#fileContainer img');
-            if (img) {
-                img.style.transform = `scale(${currentZoom})`;
-            }
-        }
 
         if (sessionStorage.getItem('erzap_auto_open_stok_modal') === 'yes') {
             sessionStorage.removeItem('erzap_auto_open_stok_modal');

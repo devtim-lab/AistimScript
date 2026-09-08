@@ -1,7 +1,9 @@
 // ==UserScript==
 // @name         Erzap - Rekap Pesanan Baru per Outlet (Tema Merah)
 // @namespace    http://tampermonkey.net/
-// @version      2026-09-07
+// @version      1.2.0
+// @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js
+// @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js
 // @description  Otomatis set status Pesanan Baru, rekap otomatis antar halaman, urutkan dari yang tertinggi (Tema Merah).
 // @author       You
 // @match        https://trial.erzap.com/pesanan_penjualans*

@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Erzap - Rekap Pesanan Baru per Outlet (Tema Merah) v1.2.0
+// @name         [v1.2.0] Erzap - Rekap Pesanan Baru per Outlet (Tema Merah)
 // @namespace    http://tampermonkey.net/
 // @version      1.2.0
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js

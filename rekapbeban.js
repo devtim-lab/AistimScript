@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Rekap Beban
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.1.0
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/rekapbeban.js
 // @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/rekapbeban.js
-// @description  [v1.0.0] Tombol rekap beban kompak, sticky header, centang pindah ke bawah, HD zoom, pop-up jurnal, dan tombol tutup
+// @description  [v1.1.0] Tombol rekap beban kompak, sticky header, centang pindah ke bawah, HD zoom, pop-up jurnal, dan tombol tutup (Mobile Responsive Update)
 // @author       You
 // @match        https://trial.erzap.com/jurnals/index_transaksi_beban/new*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
@@ -20,6 +20,7 @@
         if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
         return '';
     }
+
     function parseToErzapDate(yyyymmdd) {
         if (!yyyymmdd) return '';
         const parts = yyyymmdd.split('-');
@@ -37,56 +38,320 @@
         }
     }
 
-    // CSS Styling Modal, HD Zoom Viewer, Checkbox, Popup Jurnal Frame, Shadow Merah Theme & Compact Button
+    // CSS Styling Modal, HD Zoom Viewer, Checkbox, Popup Jurnal Frame, Shadow Merah Theme & Compact Button (Mobile Responsive Optimized)
     const style = document.createElement('style');
     style.innerHTML = `
-        .tm-modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.65); z-index: 9999; display: none; justify-content: center; align-items: center; }
-        .tm-modal-content { background: #fff; width: 850px; max-width: 95%; max-height: 90vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(139, 0, 0, 0.35); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #d32f2f; }
-
-        .tm-modal-header { padding: 15px; background: linear-gradient(135deg, #b71c1c, #880e4f); color: white; display: block; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .tm-header-top { display: flex; justify-content: space-between; align-items: center; }
-        .tm-modal-header h4 { margin: 0; font-size: 18px; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .tm-close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1; transition: 0.2s; }
-        .tm-close-btn:hover { color: #ffcdd2; }
-
-        .tm-filter-area { margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px; display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; border: 1px solid rgba(255,255,255,0.2); }
-        .tm-filter-group { display: flex; flex-direction: column; flex-grow: 1; }
-        .tm-filter-group label { margin-bottom: 3px; font-size: 12px; font-weight: normal; color: #fff; }
-        .tm-filter-group input, .tm-filter-group select { padding: 6px; border-radius: 4px; border: 1px solid #ccc; color: #333; font-size: 13px; background: #fff; }
-
-        .tm-btn-cari { padding: 6px 15px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; height: 32px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .tm-btn-cari:hover { background: #b71c1c; }
-        .tm-btn-cari:disabled { background: #6c757d; cursor: not-allowed; }
-
-        .tm-modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; max-height: calc(90vh - 160px); }
-
+        .tm-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.65);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .tm-modal-content {
+            background: #fff;
+            width: 850px;
+            max-width: 100%;
+            max-height: 92vh;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.35);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #d32f2f;
+        }
+        .tm-modal-header {
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #b71c1c, #880e4f);
+            color: white;
+            display: block;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .tm-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .tm-modal-header h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .tm-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+            transition: 0.2s;
+        }
+        .tm-close-btn:hover {
+            color: #ffcdd2;
+        }
+        .tm-filter-area {
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 6px;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .tm-filter-group {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            min-width: 130px;
+        }
+        .tm-filter-group label {
+            margin-bottom: 3px;
+            font-size: 11px;
+            font-weight: normal;
+            color: #fff;
+        }
+        .tm-filter-group input, .tm-filter-group select {
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            color: #333;
+            font-size: 13px;
+            background: #fff;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .tm-btn-cari {
+            padding: 6px 15px;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            height: 32px;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+        .tm-btn-cari:hover {
+            background: #b71c1c;
+        }
+        .tm-btn-cari:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .tm-modal-body {
+            padding: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(92vh - 140px);
+        }
+        /* Responsive Table Wrapper */
+        .tm-table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         /* Sticky Table Header agar th tidak ikut ter-scroll */
-        .tm-modal-body table { border-collapse: separate; border-spacing: 0; width: 100%; margin-bottom: 0; }
-        .tm-modal-body th { position: sticky; top: 0; background-color: #f8f9fa; z-index: 2; border-bottom: 2px solid #dee2e6; box-shadow: inset 0 -1px 0 #dee2e6; }
-
-        #tmPaginationContainer { margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        #tmPaginationContainer .paginate_lite_wrap { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        #tmPaginationContainer .pagination_links { display: flex; align-items: center; gap: 8px; }
-        #tmPaginationContainer a.pagination_link, #tmPaginationContainer .paginate_button { color: #b71c1c; text-decoration: none; padding: 5px 12px; border: 1px solid #b71c1c; border-radius: 4px; cursor: pointer; font-weight: 500; transition: 0.2s; }
-        #tmPaginationContainer a.pagination_link:hover, #tmPaginationContainer .paginate_button:hover { background: #b71c1c; color: white; }
-        #tmPaginationContainer .disabled { color: #6c757d; cursor: not-allowed; padding: 5px 12px; border: 1px solid #ccc; border-radius: 4px; background: #f8f9fa; }
-        .tm-note { font-size: 11px; color: #888; margin-top: 5px; text-align: right; font-style: italic; }
-
+        .tm-modal-body table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        .tm-modal-body th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa;
+            z-index: 2;
+            border-bottom: 2px solid #dee2e6;
+            box-shadow: inset 0 -1px 0 #dee2e6;
+        }
+        #tmPaginationContainer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        #tmPaginationContainer .paginate_lite_wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        #tmPaginationContainer .pagination_links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        #tmPaginationContainer a.pagination_link, #tmPaginationContainer .paginate_button {
+            color: #b71c1c;
+            text-decoration: none;
+            padding: 5px 12px;
+            border: 1px solid #b71c1c;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        #tmPaginationContainer a.pagination_link:hover, #tmPaginationContainer .paginate_button:hover {
+            background: #b71c1c;
+            color: white;
+        }
+        #tmPaginationContainer .disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+            padding: 5px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+        .tm-note {
+            font-size: 11px;
+            color: #888;
+            margin-top: 8px;
+            text-align: right;
+            font-style: italic;
+        }
         /* HD Zoomable File Viewer Styles */
-        .tm-file-viewer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.92); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .tm-file-viewer-toolbar { position: absolute; top: 15px; right: 25px; display: flex; gap: 10px; align-items: center; z-index: 10001; }
-        .tm-file-info-badge { background: rgba(183, 28, 28, 0.9); color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; border: 1px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-check-badge { background: rgba(40, 167, 69, 0.9); color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); user-select: none; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-check-badge input { width: 16px; height: 16px; cursor: pointer; }
-        .tm-jurnal-btn { background: #d32f2f; border: 1px solid white; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; text-decoration: none; transition: 0.2s; display: inline-flex; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-jurnal-btn:hover { background: #b71c1c; color: white; text-decoration: none; }
-        .tm-zoom-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-zoom-btn:hover { background: rgba(255,255,255,0.4); }
-
-        .tm-view-close-btn { background: #495057; border: 1px solid white; color: white; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .tm-view-close-btn:hover { background: #343a40; }
-
-        .tm-file-container { width: 90%; height: 85vh; display: flex; align-items: center; justify-content: center; overflow: auto; position: relative; border-radius: 4px; }
+        .tm-file-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.92);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .tm-file-viewer-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            left: 10px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: flex-end;
+            z-index: 10001;
+            flex-wrap: wrap;
+        }
+        .tm-file-info-badge {
+            background: rgba(183, 28, 28, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            margin-right: auto;
+        }
+        .tm-check-badge {
+            background: rgba(40, 167, 69, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.3);
+            user-select: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .tm-check-badge input {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+        .tm-jurnal-btn {
+            background: #d32f2f;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            text-decoration: none;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .tm-jurnal-btn:hover {
+            background: #b71c1c;
+            color: white;
+            text-decoration: none;
+        }
+        .tm-zoom-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid white;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .tm-zoom-btn:hover {
+            background: rgba(255,255,255,0.4);
+        }
+        .tm-view-close-btn {
+            background: #495057;
+            border: 1px solid white;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .tm-view-close-btn:hover {
+            background: #343a40;
+        }
+        .tm-file-container {
+            width: 95%;
+            height: 75vh;
+            margin-top: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            position: relative;
+            border-radius: 4px;
+        }
         .tm-file-container img {
             max-width: 100%;
             transition: transform 0.15s ease-out;
@@ -95,18 +360,95 @@
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
         }
-        .tm-file-container img:active { cursor: grabbing; }
-        .tm-file-container iframe { width: 100%; height: 100%; background: #fff; border: none; border-radius: 4px; }
-
+        .tm-file-container img:active {
+            cursor: grabbing;
+        }
+        .tm-file-container iframe {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border: none;
+            border-radius: 4px;
+        }
         /* Popup Frame Jurnal Tema Merah */
-        .tm-jurnal-popup { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 10005; display: none; justify-content: center; align-items: center; }
-        .tm-jurnal-popup-content { background: #fff; width: 850px; max-width: 95%; height: 85vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(139, 0, 0, 0.4); border: 1px solid #b71c1c; }
-        .tm-jurnal-popup-header { padding: 12px 20px; background: linear-gradient(135deg, #b71c1c, #880e4f); color: white; display: flex; justify-content: space-between; align-items: center; }
-        .tm-jurnal-popup-header h4 { margin: 0; font-size: 16px; font-weight: bold; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .tm-jurnal-popup-body { flex-grow: 1; width: 100%; background: #fff; border: none; }
+        .tm-jurnal-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.7);
+            z-index: 10005;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .tm-jurnal-popup-content {
+            background: #fff;
+            width: 850px;
+            max-width: 100%;
+            height: 85vh;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.4);
+            border: 1px solid #b71c1c;
+        }
+        .tm-jurnal-popup-header {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #b71c1c, #880e4f);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .tm-jurnal-popup-header h4 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .tm-jurnal-popup-body {
+            flex-grow: 1;
+            width: 100%;
+            background: #fff;
+            border: none;
+        }
+        .tm-checkbox-cek {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        tr.checked-row {
+            background-color: #ffebee !important;
+            color: #555;
+        }
 
-        .tm-checkbox-cek { width: 18px; height: 18px; cursor: pointer; }
-        tr.checked-row { background-color: #ffebee !important; color: #555; }
+        /* Media Query Khusus Mobile Layar Kecil */
+        @media(max-width: 576px) {
+            .tm-filter-group {
+                min-width: 100%;
+            }
+            .tm-file-viewer-toolbar {
+                top: 5px;
+                right: 5px;
+                left: 5px;
+                justify-content: center;
+            }
+            .tm-file-info-badge {
+                width: 100%;
+                text-align: center;
+                margin-right: 0;
+            }
+            .tm-file-container {
+                margin-top: 90px;
+                height: 70vh;
+            }
+        }
     `;
     document.head.appendChild(style);
 
@@ -119,11 +461,11 @@
                         <button class="tm-close-btn" id="closeModalRekap">&times;</button>
                     </div>
                     <div class="tm-filter-area">
-                        <div class="tm-filter-group" style="flex-grow: 0; width: 145px;">
+                        <div class="tm-filter-group" style="flex-grow: 0; min-width: 130px;">
                             <label>Periode Awal</label>
                             <input type="date" id="tmDateStart">
                         </div>
-                        <div class="tm-filter-group" style="flex-grow: 0; width: 145px;">
+                        <div class="tm-filter-group" style="flex-grow: 0; min-width: 130px;">
                             <label>Periode Akhir</label>
                             <input type="date" id="tmDateEnd">
                         </div>
@@ -131,30 +473,32 @@
                             <label>Outlet</label>
                             <select id="tmSelectOutlet"></select>
                         </div>
-                        <div class="tm-filter-group" style="flex-grow: 0;">
+                        <div class="tm-filter-group" style="flex-grow: 0; min-width: 100px;">
                             <button class="tm-btn-cari" id="tmBtnCari">Terapkan Cari</button>
                         </div>
                     </div>
                 </div>
                 <div class="tm-modal-body">
-                    <table class="table table-bordered table-striped" style="width: 100%; margin-bottom: 0;">
-                        <thead>
-                            <tr>
-                                <th>Jenis Pembayaran</th>
-                                <th style="text-align:center;">Tanggal</th>
-                                <th style="text-align:right;">Total</th>
-                                <th style="text-align:center; width: 90px;">Sudah Dicek</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tmRekapBody"></tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="2"><strong>Grand Total (Halaman Ini)</strong></th>
-                                <th id="tmRekapGrandTotal" colspan="2" style="text-align:right;"><strong>Rp 0.00</strong></th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                    <div class="tm-note">*Grand Total merekap data pada halaman aktif. Header tabel terkunci (tidak ikut ter-scroll).</div>
+                    <div class="tm-table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Jenis Pembayaran</th>
+                                    <th style="text-align:center;">Tanggal</th>
+                                    <th style="text-align:right;">Total</th>
+                                    <th style="text-align:center; width: 90px;">Sudah Dicek</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tmRekapBody"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2"><strong>Grand Total (Halaman Ini)</strong></th>
+                                    <th id="tmRekapGrandTotal" colspan="2" style="text-align:right;"><strong>Rp 0.00</strong></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="tm-note">*Grand Total merekap data pada halaman aktif. Header tabel terkunci.</div>
                     <div id="tmPaginationContainer"></div>
                 </div>
             </div>
@@ -171,7 +515,7 @@
                 <button class="tm-zoom-btn" id="btnZoomOut" title="Perkecil">-</button>
                 <button class="tm-zoom-btn" id="btnZoomReset" title="Reset Ukuran">Reset</button>
                 <button class="tm-view-close-btn" id="btnViewClose">Tutup</button>
-                <button class="tm-close-btn" id="closeFileViewer" style="font-size: 28px; margin-left: 5px;">&times;</button>
+                <button class="tm-close-btn" id="closeFileViewer" style="font-size: 26px; margin-left: 5px;">&times;</button>
             </div>
             <div class="tm-file-container" id="fileContainer"></div>
         </div>
@@ -235,14 +579,7 @@
                             dataDitemukan = true;
                         }
 
-                        rowsArray.push({
-                            storageKey,
-                            isChecked,
-                            textTanggal,
-                            contentJP,
-                            textTotal,
-                            jurnalUrl
-                        });
+                        rowsArray.push({ storageKey, isChecked, textTanggal, contentJP, textTotal, jurnalUrl });
                     }
                 });
             }
@@ -266,6 +603,7 @@
             if (!dataDitemukan) {
                 rekapBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Data tidak ditemukan di halaman ini.</td></tr>';
             }
+
             document.getElementById('tmRekapGrandTotal').innerHTML = `<strong>Rp ${grandTotalNum.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>`;
 
             rekapBody.querySelectorAll('.tm-checkbox-cek').forEach(chk => {
@@ -279,8 +617,8 @@
 
             const paginationContainer = document.getElementById('tmPaginationContainer');
             paginationContainer.innerHTML = '';
-
             const mainPagination = document.querySelector('.paginate_lite_wrap') || document.querySelector('.dataTables_paginate');
+
             if (mainPagination) {
                 paginationContainer.innerHTML = mainPagination.innerHTML;
                 const pagLinks = paginationContainer.querySelectorAll('a, .paginate_button');
@@ -309,12 +647,11 @@
 
         btnRekap.addEventListener('click', function(e) {
             if(e) e.preventDefault();
-
             const oriOutlet = document.getElementById('pencarian_idoutlet_own');
             const oriDateStart = document.getElementById('pencarian_tanggal_dari');
             const oriDateEnd = document.getElementById('pencarian_tanggal_sampai');
-
             const tmSelectOutlet = document.getElementById('tmSelectOutlet');
+
             tmSelectOutlet.innerHTML = '';
             if (oriOutlet) {
                 Array.from(oriOutlet.options).forEach(opt => {
@@ -336,7 +673,6 @@
         document.getElementById('tmBtnCari').addEventListener('click', function() {
             this.innerText = 'Memproses...';
             this.disabled = true;
-
             sessionStorage.setItem('erzap_auto_open_modal', 'yes');
 
             const oriOutlet = document.getElementById('pencarian_idoutlet_own');
@@ -348,11 +684,13 @@
                 oriOutlet.dispatchEvent(new Event('change', { bubbles: true }));
                 if (typeof window.$ !== 'undefined') window.$(oriOutlet).trigger('change');
             }
+
             if (oriDateStart && document.getElementById('tmDateStart').value) {
                 oriDateStart.value = parseToErzapDate(document.getElementById('tmDateStart').value);
                 oriDateStart.dispatchEvent(new Event('change', { bubbles: true }));
                 if (typeof window.$ !== 'undefined') window.$(oriDateStart).trigger('change');
             }
+
             if (oriDateEnd && document.getElementById('tmDateEnd').value) {
                 oriDateEnd.value = parseToErzapDate(document.getElementById('tmDateEnd').value);
                 oriDateEnd.dispatchEvent(new Event('change', { bubbles: true }));
@@ -500,7 +838,6 @@
                 currentZoom = 1;
 
                 const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(fileUrl);
-
                 if (isImage) {
                     const img = document.createElement('img');
                     img.src = fileUrl;

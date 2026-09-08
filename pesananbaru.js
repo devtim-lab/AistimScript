@@ -4,7 +4,7 @@
 // @version      1.2.0
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js
 // @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/pesananbaru.js
-// @description  Otomatis set status Pesanan Baru, rekap otomatis antar halaman, urutkan dari yang tertinggi (Tema Merah).
+// @description  [v1.2.0] Otomatis set status Pesanan Baru, rekap otomatis antar halaman, urutkan dari yang tertinggi (Tema Merah).
 // @author       You
 // @match        https://trial.erzap.com/pesanan_penjualans*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com

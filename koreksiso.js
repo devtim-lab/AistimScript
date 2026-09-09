@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Auto Koreksi, Simpan, & Reload - Erzap
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/koreksiso.js
 // @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/koreksiso.js
-// @description  [v1.3.0] Alur: KOREKSI (Koreksi teratas = Hasil SO, Koreksi ke-2 dst = 0) -> SIMPAN -> RELOAD
+// @description  [v1.3.1] Alur: KOREKSI (Koreksi teratas = Hasil SO, Koreksi ke-2 dst = 0) -> SIMPAN -> RELOAD
 // @author       You
 // @match        https://demo.erzap.com/stok_opnams/proses_koreksi_so/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
@@ -249,11 +249,31 @@
             const groupDiv = document.createElement('div');
             groupDiv.id = 'autoKoreksiGroup';
 
+            // Samakan ukuran & gaya dengan tombol FIFO supaya rata/sejajar di desktop
+            const cs = window.getComputedStyle(targetBtn);
+            function matchBtnStyle(btn) {
+                btn.style.paddingTop = cs.paddingTop;
+                btn.style.paddingBottom = cs.paddingBottom;
+                btn.style.paddingLeft = cs.paddingLeft;
+                btn.style.paddingRight = cs.paddingRight;
+                btn.style.fontSize = cs.fontSize;
+                btn.style.lineHeight = cs.lineHeight;
+                btn.style.fontWeight = cs.fontWeight;
+                btn.style.borderRadius = cs.borderRadius;
+                btn.style.borderWidth = cs.borderWidth;
+                btn.style.height = cs.height;
+                btn.style.verticalAlign = 'middle';
+                btn.style.display = 'inline-flex';
+                btn.style.alignItems = 'center';
+                btn.style.justifyContent = 'center';
+            }
+
             const startBtn = document.createElement('button');
             startBtn.id = 'startAutoBtn';
             startBtn.type = 'button';
             startBtn.className = targetBtn.className ? targetBtn.className : 'btn btn-default';
             startBtn.textContent = isRunning ? 'KOREKSI...' : 'START AUTO';
+            matchBtnStyle(startBtn);
             startBtn.style.backgroundColor = '#28a745';
             startBtn.style.color = '#fff';
             startBtn.style.borderColor = '#28a745';
@@ -265,6 +285,7 @@
             stopBtn.type = 'button';
             stopBtn.className = targetBtn.className ? targetBtn.className : 'btn btn-default';
             stopBtn.textContent = 'STOP';
+            matchBtnStyle(stopBtn);
             stopBtn.style.backgroundColor = '#dc3545';
             stopBtn.style.color = '#fff';
             stopBtn.style.borderColor = '#dc3545';

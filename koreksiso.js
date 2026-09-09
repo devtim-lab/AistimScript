@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Auto Koreksi, Simpan, & Reload - Erzap
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0
+// @version      1.2.0
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/koreksiso.js
 // @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/koreksiso.js
-// @description  [v1.1.0] Alur: KOREKSI (Koreksi teratas = Hasil SO, Koreksi ke-2 dst = 0) -> SIMPAN -> RELOAD
+// @description  [v1.2.0] Alur: KOREKSI (Koreksi teratas = Hasil SO, Koreksi ke-2 dst = 0) -> SIMPAN -> RELOAD
 // @author       You
 // @match        https://demo.erzap.com/stok_opnams/proses_koreksi_so/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
@@ -279,16 +279,35 @@
                 pengkoreksiInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
-            // 2. Isi Tanggal Koreksi dengan hari ini (YYYY-MM-DD)
+            // 2. Isi Tanggal Koreksi dengan hari ini.
+            //    Deteksi otomatis format:
+            //    - <input type="date">  -> wajib YYYY-MM-DD (umumnya desktop)
+            //    - input teks + datepicker -> DD-MM-YYYY (umumnya HP)
+            //      (separator mengikuti placeholder bila ada: dd-mm-yyyy / dd/mm/yyyy)
             const tanggalKoreksiInput = document.getElementById('stok_opnam_tanggal_koreksi');
             if (tanggalKoreksiInput) {
                 const today = new Date();
                 const yyyy = today.getFullYear();
                 const mm = String(today.getMonth() + 1).padStart(2, '0');
                 const dd = String(today.getDate()).padStart(2, '0');
-                tanggalKoreksiInput.value = `${yyyy}-${mm}-${dd}`;
+
+                const isDateType = (tanggalKoreksiInput.type || '').toLowerCase() === 'date';
+                let dateVal;
+                if (isDateType) {
+                    dateVal = `${yyyy}-${mm}-${dd}`;
+                } else {
+                    const ph = (tanggalKoreksiInput.placeholder || '').toLowerCase();
+                    const sep = ph.indexOf('/') !== -1 ? '/' : '-';
+                    dateVal = `${dd}${sep}${mm}${sep}${yyyy}`;
+                }
+                tanggalKoreksiInput.value = dateVal;
+
+                // Trigger event lengkap agar datepicker (jQuery/bootstrap-datepicker/dll) ikut membaca
+                tanggalKoreksiInput.dispatchEvent(new Event('focus', { bubbles: true }));
                 tanggalKoreksiInput.dispatchEvent(new Event('input', { bubbles: true }));
                 tanggalKoreksiInput.dispatchEvent(new Event('change', { bubbles: true }));
+                tanggalKoreksiInput.dispatchEvent(new Event('blur', { bubbles: true }));
+                tanggalKoreksiInput.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'Tab' }));
             }
 
             // 3. Isi input jumlah koreksi per produk:

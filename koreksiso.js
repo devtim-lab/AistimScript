@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Auto Koreksi, Simpan, & Reload - Erzap
 // @namespace    http://tampermonkey.net/
-// @version      1.2.0
+// @version      1.3.0
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/koreksiso.js
 // @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/koreksiso.js
-// @description  [v1.2.0] Alur: KOREKSI (Koreksi teratas = Hasil SO, Koreksi ke-2 dst = 0) -> SIMPAN -> RELOAD
+// @description  [v1.3.0] Alur: KOREKSI (Koreksi teratas = Hasil SO, Koreksi ke-2 dst = 0) -> SIMPAN -> RELOAD
 // @author       You
 // @match        https://demo.erzap.com/stok_opnams/proses_koreksi_so/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
@@ -183,8 +183,58 @@
         document.body.appendChild(modalOverlay);
     }
 
+    function injectResponsiveStyle() {
+        if (document.getElementById('autoKoreksiStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'autoKoreksiStyle';
+        style.textContent = `
+            /* Desktop: tombol inline di samping tombol FIFO */
+            #autoKoreksiGroup {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                margin-right: 5px;
+                vertical-align: middle;
+            }
+            #autoKoreksiGroup button {
+                white-space: nowrap;
+            }
+
+            /* Mobile / layar kecil: tombol jadi bar mengambang di bawah layar */
+            @media (max-width: 768px) {
+                #autoKoreksiGroup {
+                    position: fixed !important;
+                    left: 8px !important;
+                    right: 8px !important;
+                    bottom: 8px !important;
+                    top: auto !important;
+                    z-index: 99998 !important;
+                    display: flex !important;
+                    gap: 8px !important;
+                    margin: 0 !important;
+                    padding: 8px !important;
+                    background: rgba(255, 255, 255, 0.97) !important;
+                    border-radius: 10px !important;
+                    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.25) !important;
+                }
+                #autoKoreksiGroup button {
+                    flex: 1 1 0 !important;
+                    min-width: 0 !important;
+                    min-height: 44px !important;   /* standar sentuh mobile */
+                    font-size: 14px !important;
+                    font-weight: bold !important;
+                    margin: 0 !important;
+                    border-radius: 6px !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     function initControls() {
         if (document.getElementById('autoKoreksiGroup')) return;
+
+        injectResponsiveStyle();
 
         let targetBtn = null;
         const allElements = document.querySelectorAll('a, button');
@@ -198,8 +248,6 @@
         if (targetBtn) {
             const groupDiv = document.createElement('div');
             groupDiv.id = 'autoKoreksiGroup';
-            groupDiv.style.display = 'inline-block';
-            groupDiv.style.marginRight = '5px';
 
             const startBtn = document.createElement('button');
             startBtn.id = 'startAutoBtn';
@@ -209,7 +257,6 @@
             startBtn.style.backgroundColor = '#28a745';
             startBtn.style.color = '#fff';
             startBtn.style.borderColor = '#28a745';
-            startBtn.style.marginRight = '3px';
             startBtn.style.minWidth = '130px';
             startBtn.style.textAlign = 'center';
 

@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Auto Koreksi, Simpan, & Reload - Erzap
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.1.0
 // @updateURL    https://raw.githubusercontent.com/devtim-lab/AistimScript/main/koreksiso.js
 // @downloadURL  https://raw.githubusercontent.com/devtim-lab/AistimScript/main/koreksiso.js
-// @description  [v1.0.0] Alur: KOREKSI (Koreksi1 = Hasil SO, Koreksi2 dst = 0) -> SIMPAN -> RELOAD
+// @description  [v1.1.0] Alur: KOREKSI (Koreksi teratas = Hasil SO, Koreksi ke-2 dst = 0) -> SIMPAN -> RELOAD
 // @author       You
 // @match        https://demo.erzap.com/stok_opnams/proses_koreksi_so/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erzap.com
@@ -291,51 +291,71 @@
                 tanggalKoreksiInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
-            // 3. Loop berdasarkan input jumlah koreksi yang ada di halaman (menangani baris bertingkat/rowspan)
-            const allKoreksiInputs = document.querySelectorAll('input[type="text"][name*="jumlah_koreksi"]');
+            // 3. Isi input jumlah koreksi per produk:
+            //    - Input PALING ATAS dalam grup produk = nilai Hasil SO
+            //    - Input ke-2, ke-3, dst dalam grup yang sama = 0
+            const koreksiSelector = 'input[type="text"][name*="jumlah_koreksi"]';
+            const processedInputs = new Set();
 
-            // Kelompokkan input berdasarkan ID dasar produk atau ambil baris pasangannya
-            // Karena namanya berformat stok_opnam_detail_koreksi1[jumlah_koreksi], stok_opnam_detail_koreksi2[jumlah_koreksi], dst.
-            // Kita kumpulkan semua input berdasarkan produk atau kita cari elemen `so` di baris utamanya.
+            function setInputValue(inp, val) {
+                if (processedInputs.has(inp)) return;
+                processedInputs.add(inp);
+                inp.value = val;
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+                inp.dispatchEvent(new Event('change', { bubbles: true }));
+            }
 
-            // Cara yang lebih akurat untuk struktur rowspan:
-            // Cari semua elemen tr utama atau cari berdasarkan elemen Hasil SO (`td[id^="so"]`)
             const soCells = document.querySelectorAll('td[id^="so"]');
             soCells.forEach(soCell => {
+                // Ambil angka Hasil SO (dukung minus & koma, mis. "-1,5" / "12.000")
                 let valText = soCell.textContent.trim();
-                const match = valText.match(/[\d.]+/);
+                const match = valText.match(/-?[\d.,]+/);
                 let hasilSOVal = match ? match[0] : '0';
 
-                // Cari baris `tr` tempat cell ini berada, dan baris-baris berikutnya yang terkait dengan produk ini
-                // Berdasarkan HTML Anda, baris pertama memiliki rowspan pada kolom SO, dan baris kedua adalah `tr` berikutnya.
                 let currentRow = soCell.closest('tr');
+                if (!currentRow) return;
 
-                // Cari semua input jumlah_koreksi yang ada di baris ini DAN baris setelahnya (selama belum masuk ke produk baru)
+                // Jumlah baris yang dicakup produk ini diambil dari atribut rowspan
+                // pada kolom Hasil SO (lebih andal daripada menebak id <tr>).
+                let span = parseInt(soCell.getAttribute('rowspan') || '1', 10);
+                if (isNaN(span) || span < 1) span = 1;
+
                 let inputsInGroup = [];
-                let nextTr = currentRow;
-
-                // Ambil input di row pertama
-                let inp1 = currentRow.querySelector('input[type="text"][name*="jumlah_koreksi"]');
-                if (inp1) inputsInGroup.push(inp1);
-
-                // Cek row berikutnya (misal tr dengan id yang sama atau tr di bawahnya yang memiliki input koreksi lanjutan)
-                let siblingTr = currentRow.nextElementSibling;
-                while (siblingTr && siblingTr.id && siblingTr.id.startsWith('tr_')) {
-                    let inpSub = siblingTr.querySelector('input[type="text"][name*="jumlah_koreksi"]');
-                    if (inpSub) inputsInGroup.push(inpSub);
-                    siblingTr = siblingTr.nextElementSibling;
+                let row = currentRow;
+                let rowsChecked = 0;
+                while (row && rowsChecked < span) {
+                    let inps = row.querySelectorAll(koreksiSelector);
+                    inps.forEach(i => { if (!processedInputs.has(i)) inputsInGroup.push(i); });
+                    row = row.nextElementSibling;
+                    rowsChecked++;
                 }
 
-                // Isi nilai: Index 0 (atas) = Hasil SO, Index berikutnya (bawah) = 0
-                inputsInGroup.forEach((inp, idx) => {
-                    if (idx === 0) {
-                        inp.value = hasilSOVal;
-                    } else {
-                        inp.value = '0';
+                // Fallback: jika rowspan tidak dipakai, gabungkan baris-baris berikutnya
+                // selama baris tersebut TIDAK punya cell Hasil SO sendiri (berarti masih
+                // produk yang sama / baris lanjutan).
+                if (span === 1) {
+                    let sib = currentRow.nextElementSibling;
+                    while (sib && !sib.querySelector('td[id^="so"]')) {
+                        let inps = sib.querySelectorAll(koreksiSelector);
+                        if (inps.length === 0) break;
+                        inps.forEach(i => { if (!processedInputs.has(i)) inputsInGroup.push(i); });
+                        sib = sib.nextElementSibling;
                     }
-                    inp.dispatchEvent(new Event('input', { bubbles: true }));
-                    inp.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                // Isi nilai: index 0 (paling atas) = Hasil SO, sisanya = 0
+                inputsInGroup.forEach((inp, idx) => {
+                    setInputValue(inp, idx === 0 ? hasilSOVal : '0');
                 });
+            });
+
+            // Fallback terakhir: input koreksi yang tidak masuk grup mana pun
+            // (mis. struktur tabel tak terduga) -> isi 0 agar tidak ikut terkirim
+            // dengan nilai lama/kosong.
+            document.querySelectorAll(koreksiSelector).forEach(inp => {
+                if (!processedInputs.has(inp)) {
+                    setInputValue(inp, '0');
+                }
             });
 
             // --- TAHAP 2: SIMPAN ---
